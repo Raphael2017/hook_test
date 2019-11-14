@@ -120,7 +120,7 @@ int getGotTableInfo(const char *lib, unsigned long *base, unsigned long *size) {
 		printf("elf_section_header.sh_type: %d, elf_section_header.sh_name: %s, elf_section_header.sh_size: %d, elf_section_header.sh_addr: %p\n",
 				elf_section_header.sh_type, lpStringTable + elf_section_header.sh_name, elf_section_header.sh_size, elf_section_header.sh_addr);
 		if(elf_section_header.sh_type == SHT_PROGBITS) {
-			if(strcmp(lpStringTable + elf_section_header.sh_name, ".got") == 0) {
+			if(strcmp(lpStringTable + elf_section_header.sh_name, ".got.plt") == 0) {
 				*base = elf_section_header.sh_addr;
 				*size = elf_section_header.sh_size;
 				ret = 0;

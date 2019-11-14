@@ -6,7 +6,7 @@
 
 void run() {
     while (true) {
-        //sleep(30);
+        sleep(30);
         int m = rand()%10, n = rand()%10;
         int t = add(m, n);
         printf("%d\n", t);

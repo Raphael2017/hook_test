@@ -3,7 +3,7 @@ project(hook)
 
 set(CMAKE_CXX_STANDARD 14)
 
-set(CMAKE_CXX_FLAGS "-g ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-g -no-pie ${CMAKE_CXX_FLAGS}")
 
 add_subdirectory(math)
 add_subdirectory(math_n)
