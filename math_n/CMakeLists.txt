@@ -1,3 +1,5 @@
 include_directories(../math)
-add_library(math_add_n SHARED ./add.cpp ./gothook.cpp)
+include_directories(../../subhook)
+add_library(math_add_n SHARED ./add.cpp)
 target_link_libraries(math_add_n dl)
+target_link_libraries(math_add_n /home/qwerty/github/subhook/libsubhook.so)

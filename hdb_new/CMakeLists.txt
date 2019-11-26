@@ -1,0 +1,5 @@
+include_directories(../hdb)
+include_directories(../../subhook)
+add_library(hdb_new SHARED ./hdb_new.cpp)
+target_link_libraries(hdb_new dl)
+#target_link_libraries(hdb_new /home/qwerty/github/subhook/libsubhook.so)
