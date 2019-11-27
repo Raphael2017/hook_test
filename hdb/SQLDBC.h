@@ -796,6 +796,12 @@ public:
                          const SQLDBC_Length sqlLength,
                          const SQLDBC_StringEncoding encoding);
 
+  SQLDBC_DLLEXPORT
+  SQLDBC_Retcode executeItab(void*, bool);
+
+  SQLDBC_DLLEXPORT
+  void *getItabReader();
+
     /* #methodmap SQLDBC_PreparedStatement_prepareNTS prepare */
   SQLDBC_DLLEXPORT
   SQLDBC_Retcode prepare(const char *sql,
@@ -827,7 +833,7 @@ SQLDBC_DLLEXPORT
 
 
   SQLDBC_DLLEXPORT
-  SQLDBC_Retcode bindParameter (const SQLDBC_UInt2     Index,
+  SQLDBC_Retcode bindParameter (const SQLDBC_UInt4     Index,
                                 const SQLDBC_HostType  Type,
                                 void                  *paramAddr,
                                 SQLDBC_Length         *LengthIndicator,

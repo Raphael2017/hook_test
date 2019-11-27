@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     rc = conn->connect(connectArgs.host, connectArgs.dbname,
                        connectArgs.username, connectArgs.password);
     if(SQLDBC_OK != rc) {
-        fprintf(stderr, "Connecting to the database failed %s", conn->error().getErrorText());
+        fprintf(stderr, "Connecting to the database failed %s\n", conn->error().getErrorText());
         return (1);
     }
     printf("Sucessfull connected to %s as user %s\n",
@@ -58,14 +58,31 @@ int main(int argc, char *argv[])
 #if 1
     {
         SQLDBC_PreparedStatement *stmt = conn->createPreparedStatement();
+
+        rc = stmt->executeItab(nullptr, false);
+        if(SQLDBC_OK != rc) {
+            fprintf(stderr, "executeItab %s\n", stmt->error().getErrorText());
+            //return (1);
+        }
+        void *p = stmt->getItabReader();
+        if (SQLDBC_OK != rc) {
+            fprintf(stderr, "getItabReader %s\n", stmt->error().getErrorText());
+        }
+
         rc = stmt->prepare("SELECT 'Hello world' from DUMMY", SQLDBC_StringEncodingType::UTF8);
         if(SQLDBC_OK != rc) {
-            fprintf(stderr, "Prepare failed %s", stmt->error().getErrorText());
+            fprintf(stderr, "Prepare failed %s\n", stmt->error().getErrorText());
             return (1);
         }
+
+        rc = stmt->bindParameter(100, SQLDBC_HOSTTYPE_MIN, nullptr, nullptr, 0);
+        if (SQLDBC_OK != rc) {
+            fprintf(stderr, "bindParameter failed %s\n", stmt->error().getErrorText());
+        }
+
         rc = stmt->execute();
         if(SQLDBC_OK != rc) {
-            fprintf(stderr, "Execution failed %s", stmt->error().getErrorText());
+            fprintf(stderr, "Execution failed %s\n", stmt->error().getErrorText());
             return (1);
         }
         /*
@@ -74,7 +91,7 @@ int main(int argc, char *argv[])
         SQLDBC_ResultSet *result;
         result = stmt->getResultSet();
         if(!result) {
-            fprintf(stderr, "SQL command doesn't return a result set %s", stmt->error().getErrorText());
+            fprintf(stderr, "SQL command doesn't return a result set %s\n", stmt->error().getErrorText());
             return (1);
         }
         /*
@@ -82,7 +99,7 @@ int main(int argc, char *argv[])
          */
         rc = result->next();
         if(SQLDBC_OK != rc) {
-            fprintf(stderr, "Error fetching data %s", stmt->error().getErrorText());
+            fprintf(stderr, "Error fetching data %s\n", stmt->error().getErrorText());
             return (1);
         }
         char szString[30];
@@ -92,7 +109,7 @@ int main(int argc, char *argv[])
          */
         rc = result->getObject(1, SQLDBC_HOSTTYPE_ASCII, szString, &ind, sizeof(szString));
         if(SQLDBC_OK != rc) {
-            fprintf(stderr, "Error getObject %s", stmt->error().getErrorText());
+            fprintf(stderr, "Error getObject %s\n", stmt->error().getErrorText());
             return (1);
         }
         printf("%s\n", szString);
