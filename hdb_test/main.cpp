@@ -17,47 +17,12 @@ typedef struct ConnectArgsT {
 static void parseArgs (ConnectArgsT * connectArgs, int argc, char **argv);
 
 using namespace SQLDBC;
-
-typedef SQLDBC_Retcode (*ConnectFun)( SQLDBC::SQLDBC_Connection *self,
-                                      const char *servernode,
-                                      const char *serverdb,
-                                      const char *username,
-                                      const char *password);
-//subhook::Hook *hk = nullptr;
-SQLDBC_Retcode connect_new( SQLDBC::SQLDBC_Connection *self,
-                            const char *servernode,
-                            const char *serverdb,
-                            const char *username,
-                            const char *password) {
-    printf("self: %p, servernode: %s, serverdb: %s, username: %s, password: %s\n", self, servernode, serverdb, username, password);
-    //printf("GetTrampoline: %p\n", hk->GetTrampoline());
-    //return ((ConnectFun)hk->GetTrampoline())(self, servernode, serverdb, username, password);
-}
-
-void loadMsg() {
-    void *h = dlopen("libSQLDBCHDB.so", RTLD_LAZY);
-    if (h == NULL)
-        return;
-    void *p = dlsym(h, "_ZN6SQLDBC17SQLDBC_Connection7connectEPKcS2_S2_S2_");
-    if (p != NULL) {
-        /*
-        hk = new subhook::Hook(p, (void*)&connect_new, subhook::HookFlag64BitOffset);
-        printf("GetTrampoline: %p\n", hk->GetTrampoline());
-        if (hk->Install()) {
-            printf("GetTrampoline: %p\n", hk->GetTrampoline());
-        } else {
-            printf("hook install fail\n");
-        }*/
-    }
-}
-
 /*
  * Let start your program with a main function
  */
 int main(int argc, char *argv[])
 {
-    loadMsg();
-    sleep(25);
+    sleep(20);
     ConnectArgsT connectArgs;
     parseArgs (&connectArgs, argc, argv);
 
@@ -78,8 +43,9 @@ int main(int argc, char *argv[])
      */
     SQLDBC_Connection *conn = env.createConnection();
     SQLDBC_Retcode rc;
-    rc = conn->connect(0/*connectArgs.host*/, /*connectArgs.dbname*/ 0,
-                       /*connectArgs.username*/ 0, /*connectArgs.password*/ 0);
+
+    rc = conn->connect(connectArgs.host, connectArgs.dbname,
+                       connectArgs.username, connectArgs.password);
     if(SQLDBC_OK != rc) {
         fprintf(stderr, "Connecting to the database failed %s", conn->error().getErrorText());
         return (1);
@@ -89,10 +55,14 @@ int main(int argc, char *argv[])
     /*
      * Create a new statment object and execute it.
      */
-#if 0
+#if 1
     {
         SQLDBC_PreparedStatement *stmt = conn->createPreparedStatement();
-        rc = stmt->prepare("SELECT 'Hello world' from DUMMY");
+        rc = stmt->prepare("SELECT 'Hello world' from DUMMY", SQLDBC_StringEncodingType::UTF8);
+        if(SQLDBC_OK != rc) {
+            fprintf(stderr, "Prepare failed %s", stmt->error().getErrorText());
+            return (1);
+        }
         rc = stmt->execute();
         if(SQLDBC_OK != rc) {
             fprintf(stderr, "Execution failed %s", stmt->error().getErrorText());

@@ -1,79 +1,55 @@
 #include "stdio.h"
-#define SUBHOOK_X86_64
-#include "subhook.h"
 #include <dlfcn.h>
 #include "SQLDBC.h"
+#include "subhook.h"
+#include <string>
 
-subhook::Hook *hk = nullptr;
+#define LOCAL_OUT_PUT       "/home/qwerty/hook_log.txt"
+#define REMOTE_OUT_PUT      "/home/he4adm/hook_log.txt"
+#define TERMINAL_OUT_PUT    ""
 
-
-
-typedef SQLDBC_Retcode (*ConnectFun)( SQLDBC::SQLDBC_Connection *self,
-        const char *servernode,
-        const char *serverdb,
-        const char *username,
-        const char *password);
-
-typedef SQLDBC::SQLDBC_PreparedStatement *(*CreatePrepareStatementFun)(SQLDBC::SQLDBC_Connection *self);
-
-SQLDBC_Retcode connect_new( SQLDBC::SQLDBC_Connection *self,
-                              const char *servernode,
-                              const char *serverdb,
-                              const char *username,
-                              const char *password) {
-    printf("self: %p, servernode: %s, serverdb: %s, username: %s, password: %s\n", self, servernode, serverdb, username, password);
-    printf("GetTrampoline: %p\n", hk->GetTrampoline());
-    return ((ConnectFun)hk->GetTrampoline())(self, servernode, serverdb, username, password);
-}
-
-SQLDBC::SQLDBC_PreparedStatement *create_prepare_statement_new(SQLDBC::SQLDBC_Connection *self) {
-    printf("self: %p\n", self);
-    printf("GetTrampoline: %p\n", hk->GetTrampoline());
-    return ((CreatePrepareStatementFun)hk->GetTrampoline())(self);
-}
+#define SQLDBC_SQLDBC_PreparedStatement_prepare_char_const_SQLDBC_StringEncodingType_Encoding "_ZN6SQLDBC24SQLDBC_PreparedStatement7prepareEPKcN25SQLDBC_StringEncodingType8EncodingE"
 
 extern "C" {
 
-void *p_test = nullptr;
-SQLDBC_Retcode _ZN6SQLDBC17SQLDBC_Connection7connectEPKcS2_S2_S2_( SQLDBC::SQLDBC_Connection *self,
-                            const char *servernode,
-                            const char *serverdb,
-                            const char *username,
-                            const char *password) {
-    printf("self: %p, servernode: %s, serverdb: %s, username: %s, password: %s\n", self, servernode, serverdb, username, password);
-    //printf("GetTrampoline: %p\n", hk->GetTrampoline());
+typedef
+SQLDBC_Retcode (*PrepareFun)(SQLDBC::SQLDBC_PreparedStatement *self,
+                             const char *sql,
+                             const SQLDBC_StringEncoding encoding);
 
-    void *old = dlsym(RTLD_NEXT, "_ZN6SQLDBC17SQLDBC_Connection7connectEPKcS2_S2_S2_");
-    void *newp = dlsym(RTLD_DEFAULT, "_ZN6SQLDBC17SQLDBC_Connection7connectEPKcS2_S2_S2_");
-    printf("old: %p, new: %p\n", old, newp);
-    //old = nullptr;
-    return ((ConnectFun)old)(self, servernode, serverdb, username, password);
+PrepareFun prepare_old = nullptr;
+SQLDBC_Retcode prepare_new(SQLDBC::SQLDBC_PreparedStatement *self,
+                           const char *sql,
+                           const SQLDBC_StringEncoding encoding) {
+    printf("Call prepare_new sql script: %s\n", sql);
+    return prepare_old(self, sql, encoding);
 }
 
+void init_log(const std::string& file) {
+    if (file.length() > 0) freopen(file.c_str(), "w", stdout);
+}
 
 __attribute__((constructor))
 void loadMsg() {
-    //void *h = dlopen("/home/qwerty/github/hook_test/hdb/libSQLDBCHDB.so", RTLD_LAZY);
-
-    void *h = dlopen("/home/he4adm/libSQLDBCHDB.so", RTLD_LAZY);
-    return;
-
-    if (h == NULL)
+    init_log(LOCAL_OUT_PUT);
+    printf("So file inject success\n");
+    printf("Hook begin\n");
+    prepare_old = (PrepareFun)dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_prepare_char_const_SQLDBC_StringEncodingType_Encoding);
+    if (prepare_old == nullptr) {
+        printf("Hook fail with prepare_old = NIL\n");
         return;
-    //void *p = dlsym(h, "_ZN6SQLDBC17SQLDBC_Connection23createPreparedStatementEv");
-    void *p = dlsym(h, "_ZN6SQLDBC17SQLDBC_Connection7connectEPKcS2_S2_S2_");
-    p_test = p;
-    printf("old:%p, new: %p\n", p_test, _ZN6SQLDBC17SQLDBC_Connection7connectEPKcS2_S2_S2_);
-    /*
-    if (p != NULL) {
-        hk = new subhook::Hook(p, (void*)&connect_new, subhook::HookFlag64BitOffset);
-        printf("GetTrampoline: %p\n", hk->GetTrampoline());
-        if (hk->Install()) {
-
-        } else {
-            printf("hook install fail\n");
-        }
-    }*/
+    }
+    auto hk = new subhook::Hook((void*)prepare_old, (void*)prepare_new, subhook::HookFlag64BitOffset);
+    if (!hk->Install()) {
+        printf("Hook fail with hk->Install fail\n");
+        return;
+    }
+    if (hk->GetTrampoline() == nullptr) {
+        printf("Hook fail with hk->GetTrampoline() = NIL\n");
+        return;
+    }
+    prepare_old = (PrepareFun)hk->GetTrampoline();
+    printf("Hook success\n");
 }
 
 }
