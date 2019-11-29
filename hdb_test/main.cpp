@@ -22,7 +22,7 @@ using namespace SQLDBC;
  */
 int main(int argc, char *argv[])
 {
-    sleep(20);
+    //sleep(20);
     ConnectArgsT connectArgs;
     parseArgs (&connectArgs, argc, argv);
 

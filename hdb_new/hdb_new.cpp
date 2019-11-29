@@ -1,8 +1,8 @@
 #include "stdio.h"
 #include <dlfcn.h>
 #include "SQLDBC.h"
-#include "subhook.h"
 #include <string>
+#include "hook.h"
 
 #define LOCAL_OUT_PUT       "/home/qwerty/hook_log.txt"
 #define REMOTE_OUT_PUT      "/home/he4adm/hook_log.txt"
@@ -12,6 +12,8 @@
 #define SQLDBC_SQLDBC_PreparedStatement_executeItab_void_bool                                   "_ZN6SQLDBC24SQLDBC_PreparedStatement11executeItabEPvb"
 #define SQLDBC_SQLDBC_PreparedStatement_getItabReader                                           "_ZN6SQLDBC24SQLDBC_PreparedStatement13getItabReaderEv"
 #define SQLDBC_SQLDBC_PreparedStatement_bindParameter_unsigned_int_SQLDBC_HostType_void_long_long_long_long_bool "_ZN6SQLDBC24SQLDBC_PreparedStatement13bindParameterEj15SQLDBC_HostTypePvPxxb"
+#define SQLDBC_SQLDBC_PreparedStatement_execute                                                 "_ZN6SQLDBC24SQLDBC_PreparedStatement7executeEv"
+#define SQLDBC_SQLDBC_Statement_getResultSet                                         "_ZN6SQLDBC16SQLDBC_Statement12getResultSetEv"
 
 extern "C" {
 ////////////////////////////////////////////////////////////////////
@@ -29,10 +31,10 @@ SQLDBC_Retcode prepare_new(SQLDBC::SQLDBC_PreparedStatement *self,
 }
 ////////////////////////////////////////////////////////////////////
 typedef
-SQLDBC_Retcode (*ExecuteItab)(SQLDBC::SQLDBC_PreparedStatement *,
+SQLDBC_Retcode (*ExecuteItabFun)(SQLDBC::SQLDBC_PreparedStatement *,
                               void*, bool);
 
-ExecuteItab execute_itab_old = nullptr;
+ExecuteItabFun execute_itab_old = nullptr;
 SQLDBC_Retcode execute_itab_new(SQLDBC::SQLDBC_PreparedStatement *self,
                                 void *p, bool b) {
     printf("Call execute_itab_new\n");
@@ -67,6 +69,23 @@ SQLDBC_Retcode bind_parameter_new(SQLDBC::SQLDBC_PreparedStatement *self,
     printf("Call bind_parameter_new index: %d\n", Index);
     return bind_parameter_old(self, Index, Type, paramAddr, LengthIndicator, Size, Terminate);
 }
+///////////////////////////////////////////////////////////////////
+typedef
+SQLDBC_Retcode (*ExecuteFun)(SQLDBC::SQLDBC_PreparedStatement *);
+ExecuteFun execute_old = nullptr;
+SQLDBC_Retcode execute_new(SQLDBC::SQLDBC_PreparedStatement *self) {
+    printf("Call execute_new\n");
+    return execute_old(self);
+}
+/////////////////////////////////////////////////////////////////////////////
+
+typedef
+SQLDBC::SQLDBC_ResultSet *(*GetResultSetFun)(SQLDBC::SQLDBC_PreparedStatement *);
+GetResultSetFun get_result_set_old = nullptr;
+SQLDBC::SQLDBC_ResultSet *get_result_set_new(SQLDBC::SQLDBC_PreparedStatement *self) {
+    printf("Call get_result_set_new\n");
+    return get_result_set_old(self);
+}
 
 
 void init_log(const std::string& file) {
@@ -79,70 +98,47 @@ void loadMsg() {
     printf("So file inject success\n");
     printf("Hook begin\n");
 
-    prepare_old = (PrepareFun)dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_prepare_char_const_SQLDBC_StringEncodingType_Encoding);
+    prepare_old = (PrepareFun)install_hook(dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_prepare_char_const_SQLDBC_StringEncodingType_Encoding),
+                               (void*)prepare_new, HOOK_BY_SUBHOOK);
     if (prepare_old == nullptr) {
-        printf("Hook fail with prepare_old = NIL\n");
+        printf("Hook fail with prepare = NIL\n");
         return;
     }
-    auto hk = new subhook::Hook((void*)prepare_old, (void*)prepare_new, subhook::HookFlag64BitOffset);
-    if (!hk->Install()) {
-        printf("Hook fail with hk->Install fail\n");
-        return;
-    }
-    if (hk->GetTrampoline() == nullptr) {
-        printf("Hook fail with hk->GetTrampoline() = NIL\n");
-        return;
-    }
-    prepare_old = (PrepareFun)hk->GetTrampoline();
 
-    execute_itab_old = (ExecuteItab)dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_executeItab_void_bool);
+    execute_itab_old = (ExecuteItabFun)install_hook(dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_executeItab_void_bool),
+                                                    (void*)execute_itab_new, HOOK_BY_FUNCHOOK);
     if (execute_itab_old == nullptr) {
-        printf("Hook fail with execute_itab_old = NIL\n");
+        printf("Hook fail with execute_itab = NIL\n");
         return;
     }
-    auto hk1 = new subhook::Hook((void*)execute_itab_old, (void*)execute_itab_new, subhook::HookFlag64BitOffset);
-    if (!hk1->Install()) {
-        printf("Hook fail with hk->Install fail\n");
-        return;
-    }
-    if (hk1->GetTrampoline() == nullptr) {
-        printf("Hook fail with hk->GetTrampoline() = NIL\n");
-        return;
-    }
-    execute_itab_old = (ExecuteItab)hk1->GetTrampoline();
 
-    get_itab_reader_old = (GetItabReaderFun)dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_getItabReader);
+    get_itab_reader_old = (GetItabReaderFun)install_hook(dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_getItabReader),
+                                                         (void*)get_itab_reader_new, HOOK_BY_FUNCHOOK);
     if (get_itab_reader_old == nullptr) {
-        printf("Hook fail with get_itab_reader_old = NIL\n");
+        printf("Hook fail with get_itab_reader = NIL\n");
         return;
     }
-    auto hk2 = new subhook::Hook((void*)get_itab_reader_old, (void*)get_itab_reader_new, subhook::HookFlag64BitOffset);
-    if (!hk2->Install()) {
-        printf("Hook fail with hk->Install fail\n");
-        return;
-    }
-    if (hk2->GetTrampoline() == nullptr) {
-        printf("Hook fail with hk->GetTrampoline() = NIL\n");
-        return;
-    }
-    get_itab_reader_old = (GetItabReaderFun)hk2->GetTrampoline();
 
-    bind_parameter_old = (BindParameterFun)dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_bindParameter_unsigned_int_SQLDBC_HostType_void_long_long_long_long_bool);
+    bind_parameter_old = (BindParameterFun)install_hook(dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_bindParameter_unsigned_int_SQLDBC_HostType_void_long_long_long_long_bool),
+                                                        (void*)bind_parameter_new, HOOK_BY_FUNCHOOK);
     if (bind_parameter_old == nullptr) {
-        printf("Hook fail with bind_parameter_old = NIL\n");
+        printf("Hook fail with bind_parameter = NIL\n");
         return;
     }
-    auto hk3 = new subhook::Hook((void*)bind_parameter_old, (void*)bind_parameter_new, subhook::HookFlag64BitOffset);
-    if (!hk3->Install()) {
-        printf("Hook fail with hk->Install fail\n");
-        return;
-    }
-    if (hk3->GetTrampoline() == nullptr) {
-        printf("Hook fail with hk->GetTrampoline() = NIL\n");
-        return;
-    }
-    bind_parameter_old = (BindParameterFun)hk3->GetTrampoline();
 
+    execute_old = (ExecuteFun)install_hook(dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_execute),
+                                           (void*)execute_new, HOOK_BY_FUNCHOOK);
+    if (execute_old == nullptr) {
+        printf("Hook fail with execute = NIL\n");
+        return;
+    }
+
+    get_result_set_old = (GetResultSetFun)install_hook(dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_Statement_getResultSet),
+                                                        (void*)get_result_set_new, HOOK_BY_FUNCHOOK);
+    if (get_result_set_old == nullptr) {
+        printf("Hook fail with get_result_set = NIL\n");
+        return;
+    }
 
     printf("Hook success\n");
 }
