@@ -130,7 +130,7 @@ void CPreparedStatementInfoMgr::RemoveEnforceStatement(void* pOriginalStatement)
 
 void CPreparedStatementInfoMgr::ReleaseStatement(void* pOriginalStatement)
 {
-	theLog->WriteLog(0, "CPreparedStatementInfoMgr::ReleaseStatement pOriginalStatement. state:%p", pOriginalStatement);
+//	theLog->WriteLog(0, "CPreparedStatementInfoMgr::ReleaseStatement pOriginalStatement. state:%p", pOriginalStatement);
 
 	//release sql info
 	{

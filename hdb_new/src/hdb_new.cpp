@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <vector>
 #include "PreparedStatementInfoMgr.h"
 
 #define LOCAL_OUT_PUT       "/home/qwerty/hook_log.txt"
@@ -206,7 +207,7 @@ SQLDBC_Retcode execute_itab_new(SQLDBC::SQLDBC_PreparedStatement *self,
         //do enforcer
         if (strNewSql.compare(pStateSQL->_wstrSQL) != 0)
         {
-            theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 do enforcer.");
+//            theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 do enforcer.");
 
             //create new object of PreparedStatement
             //get connection
@@ -214,11 +215,11 @@ SQLDBC_Retcode execute_itab_new(SQLDBC::SQLDBC_PreparedStatement *self,
             auto pEnforceStatement = pConn->createPreparedStatement();
             if (pEnforceStatement)
             {
-                theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 create enforce statement success");
+ //               theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 create enforce statement success");
 
                 //prepare sql
                 SQLDBC_Retcode enforceRet = prepare_old(pEnforceStatement, (const char*)strNewSql.c_str(), pStateSQL->_encoding);
-                theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 prepare new sql result:%d", enforceRet);
+ //               theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 prepare new sql result:%d", enforceRet);
                 if (enforceRet == SQLDBC_OK)
                 {
                     //bind parameters
@@ -232,19 +233,19 @@ SQLDBC_Retcode execute_itab_new(SQLDBC::SQLDBC_PreparedStatement *self,
                             enforceRet = bind_parameter_old(pEnforceStatement, pParam->_Index,
                                                             pParam->_Type, pParam->_paramAddr, pParam->_LengthIndicator, pParam->_Size, pParam->_Terminate);
 
-                            theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 bind param, index:%d, result:%d", pParam->_Index, enforceRet);
+ //                           theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 bind param, index:%d, result:%d", pParam->_Index, enforceRet);
                             itParam++;
                         }
                     }
 
                     //execute
                     enforceRet = pEnforceStatement->executeItab(p, b);
-                    theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 bind param, execute enforce sql result:%d", enforceRet);
+ //                   theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 bind param, execute enforce sql result:%d", enforceRet);
                     if (enforceRet == SQLDBC_OK)
                     {
                         //
                         g_thePreparedStatementMgr->AddedEnforceStatement(self, pEnforceStatement);
-                        theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 added enforcer statement");
+ //                       theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 added enforcer statement");
                     }
 
                 }
@@ -253,7 +254,7 @@ SQLDBC_Retcode execute_itab_new(SQLDBC::SQLDBC_PreparedStatement *self,
         else
         {
             //remove enforcer statement
-            theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 no need do enforcer.");
+//            theLog->WriteLog(0, "My_SQLDBC_PreparedStatement_executeItab_3 no need do enforcer.");
 
             g_thePreparedStatementMgr->RemoveEnforceStatement(self);
         }
@@ -406,7 +407,7 @@ std::wstring DoenforcerForStatementOnExecute(void* pStatement, const StatementSQ
                 wstrCondi += itCondi->_field + itCondi->_op + itCondi->_value + L",";
                 itCondi++;
             }
-            theLog->WriteLog(0, L"DoenforcerForStatementOnExecute mask field:%s, condi:%s, new sql:%s", wstrField.c_str(), wstrCondi.c_str(), strNewSql.c_str());
+//            theLog->WriteLog(0, L"DoenforcerForStatementOnExecute mask field:%s, condi:%s, new sql:%s", wstrField.c_str(), wstrCondi.c_str(), strNewSql.c_str());
         }
     }
 

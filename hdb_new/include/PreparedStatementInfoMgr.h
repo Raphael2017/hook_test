@@ -5,7 +5,7 @@
 #include <list>
 #include <map>
 #include <mutex>
-#include "log.h"
+#include <string.h>
 #include "CommonFun.h"
 
 typedef unsigned char BYTE;
