@@ -1,9 +1,10 @@
 include_directories(../hdb)
+include_directories(./include)
 include_directories(../subhook)
 include_directories(../funchook)
 
-set(CMAKE_CXX_FLAGS "-D_AMD64_ -D_UNIX64 ${CMAKE_CXX_FLAGS}")
-add_library(hdb_new SHARED ./hdb_new.cpp ./hook.cpp)
+aux_source_directory(./src SRCS)
+add_library(hdb_new SHARED ./src/hdb_new.cpp ./src/hook.cpp)
 target_link_libraries(hdb_new dl)
 target_link_libraries(hdb_new /home/qwerty/github/hook_test/subhook/libsubhook.so)
 target_link_libraries(hdb_new /home/qwerty/github/hook_test/funchook/libfunchook.so)
