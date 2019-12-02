@@ -87,7 +87,7 @@ typedef
 SQLDBC::SQLDBC_ResultSet *(*GetResultSetFun)(SQLDBC::SQLDBC_PreparedStatement *);
 GetResultSetFun get_result_set_old = nullptr;
 SQLDBC::SQLDBC_ResultSet *get_result_set_new(SQLDBC::SQLDBC_PreparedStatement *self) {
-    printf("Call get_result_set_new\n");
+    printf("getpid:%d, Call get_result_set_new\n", getpid());
     return get_result_set_old(self);
 }
 /////////////////////////////////////////////////////////////////////////////
@@ -95,7 +95,7 @@ typedef
 void (*ThRqSetCurrentRequestFun)(struct REQUEST_BUF *, unsigned int);
 ThRqSetCurrentRequestFun thrq_set_current_request_old = nullptr;
 void thrq_set_current_request_new(struct REQUEST_BUF *req, unsigned int d) {
-    printf("Call thrq_set_current_request_new\n");
+    printf("getpid:%d, Call thrq_set_current_request_new\n", getpid());
     return thrq_set_current_request_old(req, d);
 }
 
