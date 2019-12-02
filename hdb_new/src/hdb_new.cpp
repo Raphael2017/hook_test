@@ -196,20 +196,14 @@ void loadMsg() {
         return;
     }
 
-    if (dlopen("dw.sapHE4_D00", RTLD_NOW) != nullptr)
-        thrq_set_current_request_old = (ThRqSetCurrentRequestFun)install_hook((unsigned char*)dlopen("dw.sapHE4_D00", RTLD_NOW)+ThRqSetCurrentRequest,
-                                                                          (void*)thrq_set_current_request_new, HOOK_BY_FUNCHOOK);
+    if (dlopen("disp+work", RTLD_NOW) != nullptr) {
+        printf("disp+work: %p\n", dlopen("disp+work", RTLD_NOW));
+        thrq_set_current_request_old = (ThRqSetCurrentRequestFun)install_hook((unsigned char*)dlopen("disp+work", RTLD_NOW)+ThRqSetCurrentRequest,
+                                                                              (void*)thrq_set_current_request_new, HOOK_BY_FUNCHOOK);
+    }
     else {
-        printf("Hook fail with dlopen(dw.sapHE4_D00, RTLD_NOW) = NIL\n");
-        if (dlopen("disp+work", RTLD_NOW) != nullptr) {
-            printf("disp+work: %p\n", dlopen("disp+work", RTLD_NOW));
-            thrq_set_current_request_old = (ThRqSetCurrentRequestFun)install_hook((unsigned char*)dlopen("disp+work", RTLD_NOW)+ThRqSetCurrentRequest,
-                                                                                  (void*)thrq_set_current_request_new, HOOK_BY_FUNCHOOK);
-        }
-        else {
-            printf("Hook fail with dlopen(disp+work, RTLD_NOW) = NIL\n");
-            return;
-        }
+        printf("Hook fail with dlopen(disp+work, RTLD_NOW) = NIL\n");
+        return;
     }
 
     printf("Hook success\n");
