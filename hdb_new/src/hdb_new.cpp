@@ -197,7 +197,7 @@ void loadMsg() {
     }
 
     void *tmp = nullptr;
-    if ((tmp = dlopen("disp+work", RTLD_LAZY)) != nullptr) {
+    if ((tmp = dlopen(nullptr, RTLD_LAZY)) != nullptr) {
         printf("disp+work: %p\n", tmp);
         thrq_set_current_request_old = (ThRqSetCurrentRequestFun)install_hook((unsigned char*)tmp+ThRqSetCurrentRequest,
                                                                               (void*)thrq_set_current_request_new, HOOK_BY_FUNCHOOK);
