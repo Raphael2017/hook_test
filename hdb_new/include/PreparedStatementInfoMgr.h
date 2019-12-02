@@ -6,7 +6,7 @@
 #include <map>
 #include <mutex>
 #include <string.h>
-#include "CommonFun.h"
+//#include "CommonFun.h"
 
 typedef unsigned char BYTE;
 
@@ -49,7 +49,7 @@ public:
 		_encoding = SQLDBC_StringEncodingType::UCS2Swapped; //we convert all encoding to SQLDBC_StringEncodingType::UCS2
 		if (encoding== SQLDBC_StringEncodingType::Ascii)
 		{
-			_wstrSQL = CommonFun::ConvertUtf8ToUtf16(szSql);
+			//_wstrSQL = CommonFun::ConvertUtf8ToUtf16(szSql);
 		}
 		else if (encoding==SQLDBC_StringEncodingType::UCS2Swapped)
 		{
