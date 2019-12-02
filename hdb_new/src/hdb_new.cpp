@@ -150,7 +150,7 @@ unsigned long get_module_base(pid_t pid, const char* module_name)
 
 __attribute__((constructor))
 void loadMsg() {
-    init_log(TERMINAL_OUT_PUT);
+    init_log(REMOTE_OUT_PUT);
     printf("So file inject success\n");
     printf("Hook begin\n");
 
@@ -201,9 +201,11 @@ void loadMsg() {
                                                                           (void*)thrq_set_current_request_new, HOOK_BY_FUNCHOOK);
     else {
         printf("Hook fail with dlopen(dw.sapHE4_D00, RTLD_NOW) = NIL\n");
-        if (dlopen("disp+work", RTLD_NOW) != nullptr)
+        if (dlopen("disp+work", RTLD_NOW) != nullptr) {
+            printf("disp+work: %p\n", dlopen("disp+work", RTLD_NOW));
             thrq_set_current_request_old = (ThRqSetCurrentRequestFun)install_hook((unsigned char*)dlopen("disp+work", RTLD_NOW)+ThRqSetCurrentRequest,
                                                                                   (void*)thrq_set_current_request_new, HOOK_BY_FUNCHOOK);
+        }
         else {
             printf("Hook fail with dlopen(disp+work, RTLD_NOW) = NIL\n");
             return;
