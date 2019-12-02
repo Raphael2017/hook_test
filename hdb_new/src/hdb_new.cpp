@@ -104,50 +104,6 @@ void init_log(const std::string& file) {
     if (file.length() > 0) freopen(file.c_str(), "w", stdout);
 }
 
-unsigned long get_module_base(pid_t pid, const char* module_name)
-{
-    FILE *fp = NULL;
-    unsigned long addr = 0;
-    char *pAddrRange = NULL;
-    char filename[32] = {0};
-    char line[1024] = {0};
-
-    if (pid < 0)
-    {
-        snprintf(filename, sizeof(filename), "/proc/self/maps");
-    }
-    else
-    {
-        snprintf(filename, sizeof(filename), "/proc/%d/maps", pid);
-    }
-    fp = fopen(filename, "r");
-    if (fp != NULL)
-    {
-        while (fgets(line, sizeof(line), fp))
-        {
-            if (strstr(line, module_name))
-            {
-                pAddrRange = strtok(line, "-");
-                addr = strtoul(pAddrRange, NULL, 16);
-#if defined(__x86_64__)
-                if (addr == 0x400000)
-                {
-                    addr = 0;
-                }
-#elif defined(__i386__)
-                if (addr == 0x08048000)
-				{
-					addr = 0;
-				}
-#endif
-                break;
-            }
-        }
-        fclose(fp);
-    }
-    return addr;
-}
-
 __attribute__((constructor))
 void loadMsg() {
     init_log(REMOTE_OUT_PUT);
@@ -197,7 +153,7 @@ void loadMsg() {
     }
 
     void *tmp = nullptr;
-    if ((tmp = dlopen(nullptr, RTLD_LAZY)) != nullptr) {
+    if ((tmp = dlopen(nullptr, RTLD_NOW)) != nullptr) {
         printf("disp+work: %p\n", tmp);
         thrq_set_current_request_old = (ThRqSetCurrentRequestFun)install_hook((unsigned char*)tmp+ThRqSetCurrentRequest,
                                                                               (void*)thrq_set_current_request_new, HOOK_BY_FUNCHOOK);
