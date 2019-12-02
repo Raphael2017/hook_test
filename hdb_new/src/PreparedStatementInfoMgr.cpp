@@ -1,5 +1,5 @@
 #include "PreparedStatementInfoMgr.h"
-#include "MySqldbLib.h"
+//#include "MySqldbLib.h"
 #include <thread>
 
 CPreparedStatementInfoMgr* g_thePreparedStatementMgr = NULL;
@@ -122,7 +122,7 @@ void CPreparedStatementInfoMgr::RemoveEnforceStatement(void* pOriginalStatement)
 			_OriginalStatementToEnforceStatement.erase(itEnforceState);
 
 			//release
-			CMySqldbLib::ReleaseEnforceStatement(pEnforceStatement);
+			//CMySqldbLib::ReleaseEnforceStatement(pEnforceStatement);
 		}
 	}
 
@@ -172,7 +172,7 @@ void CPreparedStatementInfoMgr::ReleaseStatement(void* pOriginalStatement)
 			_OriginalStatementToEnforceStatement.erase(itEnforcerState);
 
 		    //release 
-			CMySqldbLib::ReleaseEnforceStatement(pEnforceState);
+			//CMySqldbLib::ReleaseEnforceStatement(pEnforceState);
 		}
 	}
 }
