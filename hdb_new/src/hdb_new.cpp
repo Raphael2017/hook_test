@@ -17,7 +17,7 @@
 #define SQLDBC_SQLDBC_PreparedStatement_bindParameter_unsigned_int_SQLDBC_HostType_void_long_long_long_long_bool "_ZN6SQLDBC24SQLDBC_PreparedStatement13bindParameterEj15SQLDBC_HostTypePvPxxb"
 #define SQLDBC_SQLDBC_PreparedStatement_execute                                                 "_ZN6SQLDBC24SQLDBC_PreparedStatement7executeEv"
 #define SQLDBC_SQLDBC_Statement_getResultSet                                                    "_ZN6SQLDBC16SQLDBC_Statement12getResultSetEv"
-#define ThRqSetCurrentRequest                                                                   (0x000000000053fcb9)
+#define ThRqSetCurrentRequest                                                                   (0x540b71)
 
 extern "C" {
 ////////////////////////////////////////////////////////////////////
