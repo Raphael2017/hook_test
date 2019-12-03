@@ -32,7 +32,6 @@ PrepareFun prepare_old = nullptr;
 SQLDBC_Retcode prepare_new(SQLDBC::SQLDBC_PreparedStatement *self,
                            const char *sql,
                            const SQLDBC_StringEncoding encoding) {
-    printf("Call prepare_new sql script: %s\n", sql);
     SQLDBC_Retcode ret = SQLDBC_NOT_OK;
     wprintf(L"prepare_new, pThis=%p, sql=%s, encod=%d",
             self, (sql == NULL ? L"NULL\n" : (const wchar_t*)sql), encoding);
@@ -90,7 +89,7 @@ SQLDBC_Retcode bind_parameter_new(SQLDBC::SQLDBC_PreparedStatement *self,
                                     const SQLDBC_Length    Size,
                                     const SQLDBC_Bool      Terminate) {
     printf("Call bind_parameter_new\n");
-    g_thePreparedStatementMgr->AddedStatementParam(self, Index, Type, paramAddr, LengthIndicator, Size, Terminate);
+    //g_thePreparedStatementMgr->AddedStatementParam(self, Index, Type, paramAddr, LengthIndicator, Size, Terminate);
     return bind_parameter_old(self, Index, Type, paramAddr, LengthIndicator, Size, Terminate);
 }
 ///////////////////////////////////////////////////////////////////
