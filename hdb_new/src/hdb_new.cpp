@@ -37,8 +37,8 @@ SQLDBC_Retcode prepare_new(SQLDBC::SQLDBC_PreparedStatement *self,
                            const SQLDBC_StringEncoding encoding) {
     SQLDBC_Retcode ret = SQLDBC_NOT_OK;
 
-    std::wstring tmp = (wchar_t*)sql;
-    wprintf(L"Call prepare_new:  encoding:%d, sql: %ls\n", encoding, tmp.c_str());
+    wprintf(L"Call prepare_new:  encoding:%d, sql: [%x][%x][%x][%x][%x][%x][%x][%x]\n", encoding,
+            *sql, *(sql+1), *(sql+2), *(sql+3), *(sql+4), *(sql+5), *(sql+6), *(sql+7));
 
     g_thePreparedStatementMgr->AddedStatementSQL(self, sql, encoding);
 
