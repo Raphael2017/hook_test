@@ -22,6 +22,8 @@
 #define SQLDBC_SQLDBC_Statement_getResultSet                                                    "_ZN6SQLDBC16SQLDBC_Statement12getResultSetEv"
 #define ThRqSetCurrentRequest                                                                   (0x540b71)
 
+void test();
+
 extern "C" {
 ////////////////////////////////////////////////////////////////////
 typedef
@@ -34,7 +36,8 @@ SQLDBC_Retcode prepare_new(SQLDBC::SQLDBC_PreparedStatement *self,
                            const char *sql,
                            const SQLDBC_StringEncoding encoding) {
     SQLDBC_Retcode ret = SQLDBC_NOT_OK;
-    std::cout << "Call prepare_new" << (wchar_t*)sql << std::endl;
+
+    wprintf(L"Call prepare_new: %S\n", (wchar_t*)sql);
 
     g_thePreparedStatementMgr->AddedStatementSQL(self, sql, encoding);
 
@@ -88,7 +91,7 @@ SQLDBC_Retcode bind_parameter_new(SQLDBC::SQLDBC_PreparedStatement *self,
                                     SQLDBC_Length         *LengthIndicator,
                                     const SQLDBC_Length    Size,
                                     const SQLDBC_Bool      Terminate) {
-    printf("Call bind_parameter_new\n");
+    wprintf(L"Call bind_parameter_new\n");
     //g_thePreparedStatementMgr->AddedStatementParam(self, Index, Type, paramAddr, LengthIndicator, Size, Terminate);
     return bind_parameter_old(self, Index, Type, paramAddr, LengthIndicator, Size, Terminate);
 }
@@ -97,7 +100,7 @@ typedef
 SQLDBC_Retcode (*ExecuteFun)(SQLDBC::SQLDBC_PreparedStatement *);
 ExecuteFun execute_old = nullptr;
 SQLDBC_Retcode execute_new(SQLDBC::SQLDBC_PreparedStatement *self) {
-    printf("Call execute_new\n");
+    wprintf(L"Call execute_new\n");
     return execute_old(self);
 }
 /////////////////////////////////////////////////////////////////////////////
@@ -106,7 +109,7 @@ typedef
 SQLDBC::SQLDBC_ResultSet *(*GetResultSetFun)(SQLDBC::SQLDBC_PreparedStatement *);
 GetResultSetFun get_result_set_old = nullptr;
 SQLDBC::SQLDBC_ResultSet *get_result_set_new(SQLDBC::SQLDBC_PreparedStatement *self) {
-    printf("getpid:%d, Call get_result_set_new\n", getpid());
+    wprintf(L"getpid:%d, Call get_result_set_new\n", getpid());
     return get_result_set_old(self);
 }
 /////////////////////////////////////////////////////////////////////////////
@@ -114,7 +117,7 @@ typedef
 void (*ThRqSetCurrentRequestFun)(struct REQUEST_BUF *, unsigned int);
 ThRqSetCurrentRequestFun thrq_set_current_request_old = nullptr;
 void thrq_set_current_request_new(struct REQUEST_BUF *req, unsigned int d) {
-    printf("getpid:%d, Call thrq_set_current_request_new\n", getpid());
+    wprintf(L"getpid:%d, Call thrq_set_current_request_new\n", getpid());
     return thrq_set_current_request_old(req, d);
 }
 
@@ -125,50 +128,51 @@ void init_log(const std::string& file) {
 
 __attribute__((constructor))
 void loadMsg() {
-    init_log(REMOTE_OUT_PUT);
-    printf("So file inject success\n");
-    printf("Hook begin\n");
+    test();
+    init_log(TERMINAL_OUT_PUT);
+    wprintf(L"So file inject success\n");
+    wprintf(L"Hook begin\n");
 
     g_thePreparedStatementMgr = new CPreparedStatementInfoMgr;
     prepare_old = (PrepareFun)install_hook(dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_prepare_char_const_SQLDBC_StringEncodingType_Encoding),
                                (void*)prepare_new, HOOK_BY_SUBHOOK);
     if (prepare_old == nullptr) {
-        printf("Hook fail with prepare = NIL\n");
+        wprintf(L"Hook fail with prepare = NIL\n");
         return;
     }
 
     execute_itab_old = (ExecuteItabFun)install_hook(dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_executeItab_void_bool),
                                                     (void*)execute_itab_new, HOOK_BY_FUNCHOOK);
     if (execute_itab_old == nullptr) {
-        printf("Hook fail with execute_itab = NIL\n");
+        wprintf(L"Hook fail with execute_itab = NIL\n");
         return;
     }
 
     get_itab_reader_old = (GetItabReaderFun)install_hook(dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_getItabReader),
                                                          (void*)get_itab_reader_new, HOOK_BY_FUNCHOOK);
     if (get_itab_reader_old == nullptr) {
-        printf("Hook fail with get_itab_reader = NIL\n");
+        wprintf(L"Hook fail with get_itab_reader = NIL\n");
         return;
     }
 
     bind_parameter_old = (BindParameterFun)install_hook(dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_bindParameter_unsigned_int_SQLDBC_HostType_void_long_long_long_long_bool),
                                                         (void*)bind_parameter_new, HOOK_BY_FUNCHOOK);
     if (bind_parameter_old == nullptr) {
-        printf("Hook fail with bind_parameter = NIL\n");
+        wprintf(L"Hook fail with bind_parameter = NIL\n");
         return;
     }
 
     execute_old = (ExecuteFun)install_hook(dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_PreparedStatement_execute),
                                            (void*)execute_new, HOOK_BY_FUNCHOOK);
     if (execute_old == nullptr) {
-        printf("Hook fail with execute = NIL\n");
+        wprintf(L"Hook fail with execute = NIL\n");
         return;
     }
 
     get_result_set_old = (GetResultSetFun)install_hook(dlsym(RTLD_DEFAULT, SQLDBC_SQLDBC_Statement_getResultSet),
                                                         (void*)get_result_set_new, HOOK_BY_FUNCHOOK);
     if (get_result_set_old == nullptr) {
-        printf("Hook fail with get_result_set = NIL\n");
+        wprintf(L"Hook fail with get_result_set = NIL\n");
         return;
     }
 
@@ -184,7 +188,7 @@ void loadMsg() {
         return;
     }
 */
-    printf("Hook success\n");
+    wprintf(L"Hook success\n");
 }
 
 
@@ -195,7 +199,7 @@ std::wstring DoenforcerForStatementOnExecute(void* pStatement, const StatementSQ
 
 SQLDBC_Retcode execute_itab_new(SQLDBC::SQLDBC_PreparedStatement *self,
                                 void *p, bool b) {
-    printf("My_SQLDBC_PreparedStatement_executeItab_3,pState:%p, 2p:%p, 3p:%d\n", self, p, b);
+    wprintf(L"My_SQLDBC_PreparedStatement_executeItab_3,pState:%p, 2p:%p, 3p:%d\n", self, p, b);
 
     //enforcer, find sql and param
     const StatementSQL* pStateSQL = g_thePreparedStatementMgr->FindStatementSQL(self);
@@ -319,7 +323,7 @@ std::wstring MaskSQLFieldWithCondition(const std::wstring& src, const MaskFields
     std::wstring r = src;
     size_t find_wild;
 
-    std::wstring strMaksValueFmt = L"CASE WHEN %s THEN '***' ELSE %s END AS %s ";// L"'" + mf._c2character + L"' ";
+    std::wstring strMaksValueFmt = L"CASE WHEN %S THEN '***' ELSE %S END AS %S ";// L"'" + mf._c2character + L"' ";
 
     auto fields = mf._fields;
     auto itField = fields.begin();
@@ -363,7 +367,7 @@ std::wstring MaskSQLFieldWithCondition(const std::wstring& src, const MaskFields
 
         itField++;
     }
-
+    wprintf(r.c_str()); wprintf(L"\n");
     return r;
 }
 
@@ -411,4 +415,13 @@ std::wstring DoenforcerForStatementOnExecute(void* pStatement, const StatementSQ
     }
 
     return strNewSql;
+}
+
+void test() {
+    MaskFields mf;
+    mf._c2character = L"***";
+    mf._fields = {L"BANKL"};
+
+    //do mask
+    auto strNewSql = MaskSQLFieldWithCondition(L"SELECT \"BANKL\" FROM BUT0BK", mf);
 }
