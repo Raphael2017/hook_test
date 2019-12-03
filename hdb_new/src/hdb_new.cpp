@@ -129,7 +129,7 @@ void init_log(const std::string& file) {
 __attribute__((constructor))
 void loadMsg() {
     test();
-    init_log(TERMINAL_OUT_PUT);
+    init_log(REMOTE_OUT_PUT);
     wprintf(L"So file inject success\n");
     wprintf(L"Hook begin\n");
 
