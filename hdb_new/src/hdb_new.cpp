@@ -37,7 +37,7 @@ SQLDBC_Retcode prepare_new(SQLDBC::SQLDBC_PreparedStatement *self,
                            const SQLDBC_StringEncoding encoding) {
     SQLDBC_Retcode ret = SQLDBC_NOT_OK;
 
-    wprintf(L"Call prepare_new: %S\n", (wchar_t*)sql);
+    wprintf(L"Call prepare_new: %s\n", (wchar_t*)sql);
 
     g_thePreparedStatementMgr->AddedStatementSQL(self, sql, encoding);
 
