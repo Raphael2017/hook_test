@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <vector>
 #include "PreparedStatementInfoMgr.h"
+#include <iostream>
 
 #define LOCAL_OUT_PUT       "/home/qwerty/hook_log.txt"
 #define REMOTE_OUT_PUT      "/home/he4adm/hook_log.txt"
@@ -33,8 +34,7 @@ SQLDBC_Retcode prepare_new(SQLDBC::SQLDBC_PreparedStatement *self,
                            const char *sql,
                            const SQLDBC_StringEncoding encoding) {
     SQLDBC_Retcode ret = SQLDBC_NOT_OK;
-    wprintf(L"prepare_new, pThis=%p, sql=%s, encod=%d",
-            self, (sql == NULL ? L"NULL\n" : (const wchar_t*)sql), encoding);
+    std::cout << "Call prepare_new" << (wchar_t*)sql << std::endl;
 
     g_thePreparedStatementMgr->AddedStatementSQL(self, sql, encoding);
 
@@ -125,7 +125,7 @@ void init_log(const std::string& file) {
 
 __attribute__((constructor))
 void loadMsg() {
-    init_log(REMOTE_OUT_PUT);
+    init_log(LOCAL_OUT_PUT);
     printf("So file inject success\n");
     printf("Hook begin\n");
 
