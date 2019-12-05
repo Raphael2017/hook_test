@@ -6,6 +6,10 @@
 #include <stdio.h>
 //#include "subhook.h"
 #include <dlfcn.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
 
 typedef struct ConnectArgsT {
     char * username;
@@ -20,9 +24,55 @@ using namespace SQLDBC;
 /*
  * Let start your program with a main function
  */
+
+unsigned long get_module_base(pid_t pid, const char* module_name)
+{
+    FILE *fp = NULL;
+    unsigned long addr = 0;
+    char *pAddrRange = NULL;
+    char filename[32] = {0};
+    char line[1024] = {0};
+
+    if (pid < 0)
+    {
+        snprintf(filename, sizeof(filename), "/proc/self/maps");
+    }
+    else
+    {
+        snprintf(filename, sizeof(filename), "/proc/%d/maps", pid);
+    }
+    fp = fopen(filename, "r");
+    if (fp != NULL)
+    {
+        while (fgets(line, sizeof(line), fp))
+        {
+            if (strstr(line, module_name))
+            {
+                pAddrRange = strtok(line, "-");
+                addr = strtoul(pAddrRange, NULL, 16);
+#if defined(__x86_64__)
+                if (addr == 0x400000)
+                {
+                    addr = 0;
+                }
+#elif defined(__i386__)
+                if (addr == 0x08048000)
+				{
+					addr = 0;
+				}
+#endif
+                break;
+            }
+        }
+        fclose(fp);
+    }
+    return addr;
+}
+
 int main(int argc, char *argv[])
 {
-    //sleep(20);
+    auto m = sizeof(wchar_t);
+    printf("m: %d\n", sizeof(wchar_t));
     ConnectArgsT connectArgs;
     parseArgs (&connectArgs, argc, argv);
 
@@ -59,6 +109,14 @@ int main(int argc, char *argv[])
     {
         SQLDBC_PreparedStatement *stmt = conn->createPreparedStatement();
 
+
+
+        rc = stmt->prepare("SELECT * from DUMMY", SQLDBC_StringEncodingType::UTF8);
+        if(SQLDBC_OK != rc) {
+            fprintf(stderr, "Prepare failed %s\n", stmt->error().getErrorText());
+            return (1);
+        }
+
         rc = stmt->executeItab(nullptr, false);
         if(SQLDBC_OK != rc) {
             fprintf(stderr, "executeItab %s\n", stmt->error().getErrorText());
@@ -67,12 +125,6 @@ int main(int argc, char *argv[])
         void *p = stmt->getItabReader();
         if (SQLDBC_OK != rc) {
             fprintf(stderr, "getItabReader %s\n", stmt->error().getErrorText());
-        }
-
-        rc = stmt->prepare("SELECT 'Hello world' from DUMMY", SQLDBC_StringEncodingType::UTF8);
-        if(SQLDBC_OK != rc) {
-            fprintf(stderr, "Prepare failed %s\n", stmt->error().getErrorText());
-            return (1);
         }
 
         rc = stmt->bindParameter(100, SQLDBC_HOSTTYPE_MIN, nullptr, nullptr, 0);
