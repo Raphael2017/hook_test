@@ -17,6 +17,6 @@ TEST(MASK_STRATEGY) {
     ASSERT_TRUE(expression.length() > 0);
 
     S4HException e;
-    auto stmt = parse_sql(u"SELECT * FROM BUT0BK", e);
+    auto stmt = parse_sql(u"SELECT /* comment */ * FROM BUT0BK", e);
     ASSERT_TRUE(stmt != nullptr);
 }

@@ -39,7 +39,7 @@ IAstStmt *parse_sql(const std::u16string& sql, S4HException& e) {
     stmt->_ori_sql = sql;
 
     std::u16string cols = u" MANDT,PARTNER,BKVID,BANKS,'***' AS BANKL,BANKN,BKONT,BKREF,KOINH,BKEXT,XEZER,ACCNAME,MOVE_BKVID ";
-    size_t pos = sql.find(u"*");
+    size_t pos = sql.rfind(u"*");
     if (pos == std::u16string::npos) {
         stmt->_new_sql = sql;
     } else {
