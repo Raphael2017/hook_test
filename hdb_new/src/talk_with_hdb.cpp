@@ -17,12 +17,36 @@ SQLDBC_Retcode execute_itab_new(SQLDBC::SQLDBC_PreparedStatement *self,
                                 void *p,
                                 bool b)
 {
-    /* todo */
+    IEnforcerCtx *ctx = get_enforcer_ctx(self);
+    auto connection = self->getConnection();
+    if (ctx != nullptr && ctx->GetEnforcedStmt() != nullptr) {
+        connection->releaseStatement((SQLDBC::SQLDBC_PreparedStatement*)ctx->GetEnforcedStmt());
+        ctx->SetEnforcedStmt(nullptr);
+    }
+    do {
+        if (ctx == nullptr) break;
+        S4HException e1;
+        IAstStmt *ast = parse_sql(ctx->GetOriginalSql(), e1);
+        if (ast == nullptr || !ast->CheckSupport()) break;
+        std::vector<IMaskStrategy*> mask_strategys = query_pc( /* todo */ );
+        bool r = ast->RewriteWithMaskStrategy(connection, mask_strategys);
+        if (!r) break;
+        std::u16string new_sql = ast->Output();
+        auto enforced_stmt = connection->createPreparedStatement();
+        ctx->SetEnforcedStmt(enforced_stmt);
+        prepare_old(enforced_stmt, (char*)new_sql.c_str(), SQLDBC_StringEncodingType::UCS2Swapped);
+        S4HException e;
+        ctx->EnforcedStmtBindParameters(e);
+        execute_itab_old(enforced_stmt, p, b);
+    } while (false);
     return execute_itab_old(self, p, b);
 }
 
 void* get_itab_reader_new(SQLDBC::SQLDBC_PreparedStatement *self) {
-    /* todo */
+    IEnforcerCtx *ctx = get_enforcer_ctx(self);
+    if (ctx != nullptr && ctx->GetEnforcedStmt() != nullptr) {
+        return get_itab_reader_old((SQLDBC::SQLDBC_PreparedStatement*)ctx->GetEnforcedStmt());
+    }
     return get_itab_reader_old(self);
 }
 
@@ -36,7 +60,7 @@ SQLDBC_Retcode bind_parameter_new(SQLDBC::SQLDBC_PreparedStatement *self,
 {
     IEnforcerCtx *ctx = get_enforcer_ctx(self);
     if (ctx != nullptr) {
-        ctx->RecordParameter( /* todo */ );
+        ctx->RecordParameter( Index, Type, paramAddr, LengthIndicator, Size, Terminate );
     }
     bind_parameter_old(self, Index, Type, paramAddr, LengthIndicator, Size, Terminate);
 }
@@ -50,7 +74,8 @@ SQLDBC_Retcode execute_new(SQLDBC::SQLDBC_PreparedStatement *self) {
     }
     do {
         if (ctx == nullptr) break;
-        IAstStmt *ast = parse_sql(ctx->GetOriginalSql());
+        S4HException e1;
+        IAstStmt *ast = parse_sql(ctx->GetOriginalSql(), e1);
         if (ast == nullptr || !ast->CheckSupport()) break;
         std::vector<IMaskStrategy*> mask_strategys = query_pc( /* todo */ );
         bool r = ast->RewriteWithMaskStrategy(connection, mask_strategys);
@@ -58,11 +83,13 @@ SQLDBC_Retcode execute_new(SQLDBC::SQLDBC_PreparedStatement *self) {
         std::u16string new_sql = ast->Output();
         auto enforced_stmt = connection->createPreparedStatement();
         ctx->SetEnforcedStmt(enforced_stmt);
-        enforced_stmt->prepare((char*)new_sql.c_str());
-        for (int i = 0; i < ctx->GetParameterCount(); ++i) {
-            //enforced_stmt->bindParameter(/* todo */)
+        prepare_old(enforced_stmt, (char*)new_sql.c_str(), SQLDBC_StringEncodingType::UCS2Swapped);
+        S4HException e;
+        ctx->EnforcedStmtBindParameters(e);
+        auto rc = execute_old(enforced_stmt);
+        if (rc != SQLDBC_OK) {
+            break;
         }
-        execute_old(enforced_stmt);
     } while (false);
     return execute_old(self);
 }

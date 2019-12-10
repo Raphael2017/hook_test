@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 
 
 
-        rc = stmt->prepare("SELECT * from DUMMY", SQLDBC_StringEncodingType::UTF8);
+        rc = stmt->prepare((char*)u"SELECT 'HELLO WORLD' FROM DUMMY", SQLDBC_StringEncodingType::UCS2Swapped);
         if(SQLDBC_OK != rc) {
             fprintf(stderr, "Prepare failed %s\n", stmt->error().getErrorText());
             return (1);

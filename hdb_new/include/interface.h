@@ -3,6 +3,14 @@
 
 #include <string>
 #include <vector>
+#include <set>
+#include "talk_with_hdb.h"
+
+#define S4H_SUCCESS 0
+#define S4H_INVALID_CONNECTION -1
+#define S4H_INVALID_TABLE_NAME -2
+#define S4H_BIND_PARAM_ERROR -3
+#define S4H_SQL_PARSE_FAIL -4
 
 struct S4HException {
     int _code;
@@ -39,7 +47,7 @@ public:
     virtual std::u16string GetTableName() = 0;
     virtual bool HasColumn(const std::u16string& column_name) = 0;
     virtual bool IsColumnCompatibleWithString(const std::u16string& column_name) = 0;
-    /* todo expand the star * */
+    virtual std::vector<std::u16string> GetAllColumns() = 0;
 };
 
 ITableMetaData *create_table_metadata(void *connection, const std::u16string& table_name, S4HException& e);
@@ -53,8 +61,8 @@ public:
     virtual ~IMaskStrategy() {}
     virtual std::u16string GetMaskedColumn() = 0;
     // include the condition's column ref and the masked column
-    virtual std::vector<std::u16string> GetReferencedColumn() = 0;
-    virtual std::string MakeExpression(const std::u16string& scope) = 0;
+    virtual std::set<std::u16string> GetReferencedColumn() = 0;
+    virtual std::u16string MakeExpression(const std::u16string& scope, const std::u16string& alias) = 0;
     /* todo */
 };
 
@@ -79,7 +87,7 @@ public:
     virtual std::u16string Output() = 0;
 };
 
-IAstStmt *parse_sql(const std::u16string& sql);
+IAstStmt *parse_sql(const std::u16string& sql, S4HException& e);
 
 /*
  * this module maintain the enforcer context
@@ -88,10 +96,15 @@ IAstStmt *parse_sql(const std::u16string& sql);
 class IEnforcerCtx {
 public:
     virtual ~IEnforcerCtx() {  }
-    virtual void RecordParameter(/* todo */) = 0;
-    virtual unsigned int GetParameterCount() = 0;
+    virtual void RecordParameter(const SQLDBC_UInt4     Index,
+                                 const SQLDBC_HostType  Type,
+                                 void                  *paramAddr,
+                                 SQLDBC_Length         *LengthIndicator,
+                                 const SQLDBC_Length    Size,
+                                 const SQLDBC_Bool      Terminate) = 0;
+    virtual bool EnforcedStmtBindParameters(S4HException& e) = 0;
     virtual void *GetOriginalStmt() = 0;
-    virtual void *SetEnforcedStmt(void *s) = 0;
+    virtual void SetEnforcedStmt(void *s) = 0;
     virtual void *GetEnforcedStmt() = 0;
     virtual std::u16string GetOriginalSql() = 0;
 };
