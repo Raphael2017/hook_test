@@ -16,5 +16,7 @@ TEST(MASK_STRATEGY) {
     expression = strategys[1]->MakeExpression(u"", u"");
     ASSERT_TRUE(expression.length() > 0);
 
-
+    S4HException e;
+    auto stmt = parse_sql(u"SELECT * FROM BUT0BK", e);
+    ASSERT_TRUE(stmt != nullptr);
 }

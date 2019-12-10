@@ -1,5 +1,6 @@
 #include "interface.h"
 #include "MaskStrategyImpl.h"
+#include "tool.h"
 
 std::vector<IMaskStrategy*> query_pc(/* todo */) {
     MaskStrategyImpl *strategy = new MaskStrategyImpl;
@@ -37,13 +38,14 @@ IAstStmt *parse_sql(const std::u16string& sql, S4HException& e) {
     AstStmtDumpImpl *stmt = new AstStmtDumpImpl;
     stmt->_ori_sql = sql;
 
-    std::u16string cols = u" \"MANDT\" , \"PARTNER\" , \"BKVID\" , \"BANKS\" , '***' AS \"BANKL\" , \"BANKN\" , \"BKONT\" , \"BKREF\" , \"KOINH\" , \"BKEXT\" , \"XEZER\" , \"ACCNAME\" , \"MOVE_BKVID\" , \"PROTECT\" , \"BK_VALID_FROM\" , \"BK_VALID_TO\" , \"BK_MOVE_DATE\" , \"IBAN\" , \"BANK_GUID\" , \"ACCOUNT_ID\" , \"CHECK_DIGIT\" , \"ACCOUNT_TYPE\" , \"BP_EEW_BUT0BK\" ";
+    std::u16string cols = u" MANDT,PARTNER,BKVID,BANKS,'***' AS BANKL,BANKN,BKONT,BKREF,KOINH,BKEXT,XEZER,ACCNAME,MOVE_BKVID,BK_VALID_FROM,BK_VALID_TO,BK_MOVE_DATE,IBAN,BANK_GUID,ACCOUNT_ID,CHECK_DIGIT,ACCOUNT_TYPE,BP_EEW_BUT0BK";
     size_t pos = sql.find(u"*");
     if (pos == std::u16string::npos) {
         stmt->_new_sql = sql;
     } else {
         stmt->_new_sql = sql;
         stmt->_new_sql.replace(pos, 1, cols);
+
     }
     return stmt;
 }
