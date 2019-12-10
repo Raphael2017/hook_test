@@ -8,7 +8,7 @@ SQLDBC_Retcode prepare_new(SQLDBC::SQLDBC_PreparedStatement *self,
                            const char *sql /* this is char16_t */,
                            const SQLDBC_StringEncoding encoding)
 {
-    freopen("/home/he4adm/github/log_hook.txt","w",stdout);
+    freopen("/home/he4adm/github/log_hook.txt","a",stdout);
     std::u16string sql_str = (char16_t*)sql;
     if (is_sql_need_mask(sql_str)) {
         std::string sql_utf8; CommonFun::ToUTF8(sql_str, sql_utf8);
