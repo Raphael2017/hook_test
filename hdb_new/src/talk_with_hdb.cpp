@@ -1,5 +1,7 @@
 #include "talk_with_hdb.h"
 #include "interface.h"
+#include "stdio.h"
+#include "tool.h"
 #include <string>
 
 SQLDBC_Retcode prepare_new(SQLDBC::SQLDBC_PreparedStatement *self,
@@ -8,6 +10,8 @@ SQLDBC_Retcode prepare_new(SQLDBC::SQLDBC_PreparedStatement *self,
 {
     std::u16string sql_str = (char16_t*)sql;
     if (is_sql_need_mask(sql_str)) {
+        std::string sql_utf8; CommonFun::ToUTF8(sql_str, sql_utf8);
+        printf("%s\n", sql_utf8.c_str());
         register_enforcer_ctx(self, sql_str);
     }
     return prepare_old(self, sql, encoding);

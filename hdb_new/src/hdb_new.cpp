@@ -30,6 +30,9 @@ void thrq_set_current_request_new(struct REQUEST_BUF *req, unsigned int d) {
 
 __attribute__((constructor))
 void loadMsg() {
+    freopen("/home/he4adm/github/log_hook.txt","w",stdout);
+
+
     IHook *hook_by_sub = create_hook(IHook::HOOK_BY_SUBHOOK);
     IHook *hook_by_func = create_hook(IHook::HOOK_BY_FUNCHOOK);
 
