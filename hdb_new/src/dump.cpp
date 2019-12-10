@@ -47,10 +47,9 @@ IAstStmt *parse_sql(const std::u16string& sql, S4HException& e) {
         stmt->_new_sql.replace(pos, 1, cols);
 
         auto f = fopen("/home/he4adm/github/log_hook.txt", "a");
-        std::string str_utf8;
-        CommonFun::ToUTF8(stmt->_new_sql, str_utf8);
-        fprintf(f, "NEW SQL: %s\n", str_utf8.c_str());
-        fclose(f);
+        std::string str_utf8(stmt->_new_sql.begin(), stmt->_new_sql.end());
+        fprintf(f != nullptr ? f : stdout, "NEW SQL: %s\n", str_utf8.c_str());
+        if (f != nullptr) fclose(f);
     }
     return stmt;
 }
