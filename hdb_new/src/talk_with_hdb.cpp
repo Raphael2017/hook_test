@@ -11,7 +11,7 @@ SQLDBC_Retcode prepare_new(SQLDBC::SQLDBC_PreparedStatement *self,
     freopen("/home/he4adm/github/log_hook.txt","a",stdout);
     std::u16string sql_str = (char16_t*)sql;
     if (is_sql_need_mask(sql_str)) {
-        std::string sql_utf8; CommonFun::ToUTF8(sql_str, sql_utf8);
+        //std::string sql_utf8; CommonFun::ToUTF8(sql_str, sql_utf8);
         //printf("%s\n", sql_utf8.c_str());
         register_enforcer_ctx(self, sql_str);
         //printf("%s\n", "register_enforcer_ctx finish");
@@ -26,7 +26,7 @@ SQLDBC_Retcode execute_itab_new(SQLDBC::SQLDBC_PreparedStatement *self,
     IEnforcerCtx *ctx = get_enforcer_ctx(self);
     auto connection = self->getConnection();
     if (ctx != nullptr && ctx->GetEnforcedStmt() != nullptr) {
-        connection->releaseStatement((SQLDBC::SQLDBC_PreparedStatement*)ctx->GetEnforcedStmt());
+        //connection->releaseStatement((SQLDBC::SQLDBC_PreparedStatement*)ctx->GetEnforcedStmt());
         ctx->SetEnforcedStmt(nullptr);
     }
     do {
@@ -66,7 +66,7 @@ SQLDBC_Retcode bind_parameter_new(SQLDBC::SQLDBC_PreparedStatement *self,
 {
     IEnforcerCtx *ctx = get_enforcer_ctx(self);
     if (ctx != nullptr) {
-        //ctx->RecordParameter( Index, Type, paramAddr, LengthIndicator, Size, Terminate );
+        ctx->RecordParameter( Index, Type, paramAddr, LengthIndicator, Size, Terminate );
     }
     bind_parameter_old(self, Index, Type, paramAddr, LengthIndicator, Size, Terminate);
 }
@@ -75,7 +75,7 @@ SQLDBC_Retcode execute_new(SQLDBC::SQLDBC_PreparedStatement *self) {
     IEnforcerCtx *ctx = get_enforcer_ctx(self);
     auto connection = self->getConnection();
     if (ctx != nullptr && ctx->GetEnforcedStmt() != nullptr) {
-        connection->releaseStatement((SQLDBC::SQLDBC_PreparedStatement*)ctx->GetEnforcedStmt());
+        //connection->releaseStatement((SQLDBC::SQLDBC_PreparedStatement*)ctx->GetEnforcedStmt());
         ctx->SetEnforcedStmt(nullptr);
     }
     do {
