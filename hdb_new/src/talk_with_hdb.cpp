@@ -14,6 +14,7 @@ SQLDBC_Retcode prepare_new(SQLDBC::SQLDBC_PreparedStatement *self,
         std::string sql_utf8; CommonFun::ToUTF8(sql_str, sql_utf8);
         printf("%s\n", sql_utf8.c_str());
         register_enforcer_ctx(self, sql_str);
+        printf("%s\n", "register_enforcer_ctx finish");
     }
     return prepare_old(self, sql, encoding);
 }

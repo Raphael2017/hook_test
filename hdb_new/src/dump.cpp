@@ -41,6 +41,5 @@ IAstStmt *parse_sql(const std::u16string& sql, S4HException& e) {
 }
 
 bool is_sql_need_mask(const std::u16string& sql) {
-    return false;
-    //return sql.find(u"FROM \"BUT0BK\"") != std::u16string::npos;
+    return sql.find(u"FROM \"BUT0BK\"") != std::u16string::npos;
 }
