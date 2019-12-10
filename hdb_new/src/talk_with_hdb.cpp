@@ -12,9 +12,9 @@ SQLDBC_Retcode prepare_new(SQLDBC::SQLDBC_PreparedStatement *self,
     std::u16string sql_str = (char16_t*)sql;
     if (is_sql_need_mask(sql_str)) {
         std::string sql_utf8; CommonFun::ToUTF8(sql_str, sql_utf8);
-        printf("%s\n", sql_utf8.c_str());
+        //printf("%s\n", sql_utf8.c_str());
         register_enforcer_ctx(self, sql_str);
-        printf("%s\n", "register_enforcer_ctx finish");
+        //printf("%s\n", "register_enforcer_ctx finish");
     }
     return prepare_old(self, sql, encoding);
 }
@@ -66,7 +66,7 @@ SQLDBC_Retcode bind_parameter_new(SQLDBC::SQLDBC_PreparedStatement *self,
 {
     IEnforcerCtx *ctx = get_enforcer_ctx(self);
     if (ctx != nullptr) {
-        ctx->RecordParameter( Index, Type, paramAddr, LengthIndicator, Size, Terminate );
+        //ctx->RecordParameter( Index, Type, paramAddr, LengthIndicator, Size, Terminate );
     }
     bind_parameter_old(self, Index, Type, paramAddr, LengthIndicator, Size, Terminate);
 }
