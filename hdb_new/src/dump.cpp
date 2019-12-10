@@ -36,12 +36,10 @@ public:
 IAstStmt *parse_sql(const std::u16string& sql, S4HException& e) {
     AstStmtDumpImpl *stmt = new AstStmtDumpImpl;
     stmt->_ori_sql = sql;
-    stmt->_new_sql = u"SELECT 'TEST' FROM DUMMY";
+    stmt->_new_sql = sql;
     return stmt;
 }
 
 bool is_sql_need_mask(const std::u16string& sql) {
-    //return sql.find(u"FROM \"BUT0BK\"") != std::u16string::npos;
-    bool r = sql.find(u"FROM DUMMY") != std::u16string::npos;
-    return r;
+    return sql.find(u"FROM \"BUT0BK\"") != std::u16string::npos;
 }

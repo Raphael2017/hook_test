@@ -41,7 +41,7 @@ SQLDBC_Retcode execute_itab_new(SQLDBC::SQLDBC_PreparedStatement *self,
         prepare_old(enforced_stmt, (char*)new_sql.c_str(), SQLDBC_StringEncodingType::UCS2Swapped);
         S4HException e;
         ctx->EnforcedStmtBindParameters(e);
-        execute_itab_old(enforced_stmt, p, b);
+        return execute_itab_old(enforced_stmt, p, b);
     } while (false);
     return execute_itab_old(self, p, b);
 }
