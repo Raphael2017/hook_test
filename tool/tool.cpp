@@ -1,4 +1,7 @@
 #include "tool.h"
+#include <assert.h>
+#include <locale>
+#include <codecvt>
 #include <string.h>
 namespace CommonFun {
 

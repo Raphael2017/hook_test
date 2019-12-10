@@ -1,0 +1,1 @@
+add_library(tool STATIC ./tool.cpp)

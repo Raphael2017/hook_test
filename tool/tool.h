@@ -1,9 +1,6 @@
 #ifndef TOOL_H
 #define TOOL_H
 
-#include <assert.h>
-#include <locale>
-#include <codecvt>
 #ifdef WIN32
 #pragma warning(disable: 4996)
 #define strdup _strdup
