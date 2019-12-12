@@ -1,4 +1,5 @@
 #include <dlfcn.h>
+#include <string.h>
 #include "interface.h"
 #include "talk_with_hdb.h"
 
@@ -27,6 +28,50 @@ ThRqSetCurrentRequestFun thrq_set_current_request_old = nullptr;
 void thrq_set_current_request_new(struct REQUEST_BUF *req, unsigned int d) {
     return thrq_set_current_request_old(req, d);
 } */
+
+    unsigned long get_module_base(pid_t pid, const char* module_name)
+    {
+        FILE *fp = NULL;
+        unsigned long addr = 0;
+        char *pAddrRange = NULL;
+        char filename[32] = {0};
+        char line[1024] = {0};
+
+        if (pid < 0)
+        {
+            snprintf(filename, sizeof(filename), "/proc/self/maps");
+        }
+        else
+        {
+            snprintf(filename, sizeof(filename), "/proc/%d/maps", pid);
+        }
+        fp = fopen(filename, "r");
+        if (fp != NULL)
+        {
+            while (fgets(line, sizeof(line), fp))
+            {
+                if (strstr(line, module_name))
+                {
+                    pAddrRange = strtok(line, "-");
+                    addr = strtoul(pAddrRange, NULL, 16);
+#if defined(__x86_64__)
+                    if (addr == 0x400000)
+                    {
+                        addr = 0;
+                    }
+#elif defined(__i386__)
+                    if (addr == 0x08048000)
+				{
+					addr = 0;
+				}
+#endif
+                    break;
+                }
+            }
+            fclose(fp);
+        }
+        return addr;
+    }
 
 __attribute__((constructor))
 void loadMsg() {
@@ -89,6 +134,7 @@ void loadMsg() {
     }
     */
     /* todo log */
+    dlopen(nullptr, RTLD_NOW);
 }
 
 }
